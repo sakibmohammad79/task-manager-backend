@@ -1,19 +1,26 @@
-import jwt from 'jsonwebtoken';
+import { JwtPayload, Secret } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
+import ApiError from '../app/Error/ApiError';
+import status from 'http-status';
 
-const ACCESS_SECRET = process.env.ACCESS_TOKEN_SECRET || 'access_secret';
-const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET || 'refresh_secret';
-
-export const generateTokens = (payload: { userId: string; role: string }) => {
-  const accessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: '15m' });
-  const refreshToken = jwt.sign(payload, REFRESH_SECRET, { expiresIn: '7d' });
-
-  return { accessToken, refreshToken };
+export const generateToken = async (
+  jwtPayload: JwtPayload,
+  secret: Secret,
+  expiresIn: string
+) => {
+  return  jwt.sign(jwtPayload, secret, {
+    algorithm: "HS256",
+    expiresIn,
+  });
 };
 
-export const verifyAccessToken = (token: string) => {
-  return jwt.verify(token, ACCESS_SECRET);
+export const verifyToken = async (token: string, secret: Secret) => {
+  try {
+    const decodedData = jwt.verify(token, secret) as JwtPayload;
+    return decodedData;
+  } catch {
+    throw new ApiError(status.FORBIDDEN, "You are not authorized!");
+  }
 };
 
-export const verifyRefreshToken = (token: string) => {
-  return jwt.verify(token, REFRESH_SECRET);
-};
+

@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { TaskService } from './task.service';
 
-
 const createTask = async (req: Request, res: Response) => {
   try {
     const task = await TaskService.createTask(req.body);
